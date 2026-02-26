@@ -1,0 +1,1609 @@
+<!doctype html>
+<html lang="vi" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ASCII ↔ Decimal</title>
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#0f766e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Roboto+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ── LIGHT THEME ── */
+      :root,
+      [data-theme="light"] {
+        --bg: #f0faf8;
+        --surface: #ffffff;
+        --surf2: #e8f8f5;
+        --surf3: #ccf0e8;
+        --teal: #0f766e;
+        --teal2: #14b8a6;
+        --teal3: #5eead4;
+        --text: #134e4a;
+        --muted: #4d7a74;
+        --border: #b2e8df;
+        --err: #e11d48;
+        --grad: linear-gradient(135deg, #0f766e, #0d9488);
+        --sh:
+          0 1px 3px rgba(15, 118, 110, 0.08), 0 4px 20px rgba(15, 118, 110, 0.1);
+        --card-bg: rgba(255, 255, 255, 0.92);
+        --input-bg: #e8f8f5;
+        --input-focus: #ffffff;
+        --out-bg: #e8f8f5;
+        --mesh1: rgba(20, 184, 166, 0.14);
+        --mesh2: rgba(15, 118, 110, 0.11);
+        --mesh3: rgba(204, 240, 232, 0.4);
+        --grid-color: rgba(15, 118, 110, 0.035);
+        --pill-bg: #e8f8f5;
+        --eg-bg: #e8f8f5;
+        --toggle-track: #d1fae5;
+        --toggle-icon: ☀️;
+      }
+
+      /* ── DARK THEME ── */
+      [data-theme="dark"] {
+        --bg: #0a1a18;
+        --surface: #0f2320;
+        --surf2: #142e2a;
+        --surf3: #1a3d38;
+        --teal: #2dd4bf;
+        --teal2: #14b8a6;
+        --teal3: #0d9488;
+        --text: #ccfbf1;
+        --muted: #5eead4;
+        --border: #1e4a44;
+        --err: #fb7185;
+        --grad: linear-gradient(135deg, #0d9488, #0f766e);
+        --sh: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 24px rgba(0, 0, 0, 0.4);
+        --card-bg: rgba(15, 35, 32, 0.95);
+        --input-bg: #142e2a;
+        --input-focus: #1a3d38;
+        --out-bg: #142e2a;
+        --mesh1: rgba(13, 148, 136, 0.18);
+        --mesh2: rgba(15, 118, 110, 0.15);
+        --mesh3: rgba(10, 50, 45, 0.6);
+        --grid-color: rgba(20, 184, 166, 0.04);
+        --pill-bg: #142e2a;
+        --eg-bg: #142e2a;
+        --toggle-track: #1a3d38;
+        --toggle-icon: 🌙;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: "Roboto", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100dvh;
+        overflow-x: hidden;
+        position: relative;
+        transition:
+          background 0.35s,
+          color 0.35s;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 70% 55% at 92% 8%,
+            var(--mesh1) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 55% 65% at 8% 88%,
+            var(--mesh2) 0%,
+            transparent 55%
+          ),
+          radial-gradient(
+            ellipse 50% 45% at 50% 50%,
+            var(--mesh3) 0%,
+            transparent 65%
+          );
+        pointer-events: none;
+        z-index: 0;
+        transition: background 0.35s;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--grid-color) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+        background-size: 44px 44px;
+        pointer-events: none;
+        z-index: 0;
+        transition: background 0.35s;
+      }
+
+      #root {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 1.2rem 1rem 5.5rem;
+      }
+
+      /* ── THEME TOGGLE ── */
+      .theme-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 200;
+        width: 52px;
+        height: 28px;
+        background: var(--toggle-track);
+        border: 1.5px solid var(--border);
+        border-radius: 999px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        padding: 2px;
+        transition:
+          background 0.3s,
+          border-color 0.3s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+      .theme-btn-knob {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--grad);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        line-height: 1;
+        transition:
+          transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+          background 0.3s;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        transform: translateX(0);
+        flex-shrink: 0;
+      }
+      [data-theme="dark"] .theme-btn-knob {
+        transform: translateX(24px);
+      }
+
+      /* ── HEADER ── */
+      .hdr {
+        text-align: center;
+        padding: 1.8rem 0 2rem;
+        animation: fadeDown 0.55s ease both;
+      }
+      .hdr-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.6rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: var(--pill-bg);
+        color: var(--teal);
+        border: 1.5px solid var(--border);
+        padding: 0.28rem 0.85rem;
+        border-radius: 999px;
+        margin-bottom: 0.85rem;
+        transition:
+          background 0.35s,
+          border-color 0.35s;
+      }
+      .hdr-pill .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--teal2);
+        animation: blink 2s infinite;
+        flex-shrink: 0;
+      }
+      h1 {
+        font-family: "Roboto", sans-serif;
+        font-size: clamp(1.9rem, 7.5vw, 3rem);
+        font-weight: 700;
+        letter-spacing: -1px;
+        line-height: 1.05;
+        color: var(--text);
+        transition: color 0.35s;
+      }
+      h1 em {
+        font-style: italic;
+        background: var(--grad);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .hdr-sub {
+        margin-top: 0.5rem;
+        color: var(--muted);
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.3px;
+        transition: color 0.35s;
+      }
+
+      /* ── CARD ── */
+      .card {
+        background: var(--card-bg);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1.5px solid var(--border);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: var(--sh);
+        animation: fadeUp 0.55s ease both;
+        transition:
+          background 0.35s,
+          border-color 0.35s,
+          box-shadow 0.35s;
+      }
+
+      /* ── TABS ── */
+      .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        background: var(--surf2);
+        border-radius: 14px;
+        padding: 4px;
+        margin-bottom: 1.4rem;
+        transition: background 0.35s;
+      }
+      .tab {
+        padding: 0.6rem 0.5rem;
+        border: none;
+        background: transparent;
+        font-family: "Roboto", sans-serif;
+        font-weight: 500;
+        font-size: 0.88rem;
+        color: var(--muted);
+        cursor: pointer;
+        border-radius: 10px;
+        transition: all 0.22s ease;
+      }
+      .tab.active {
+        background: var(--grad);
+        color: #fff;
+        box-shadow: 0 3px 14px rgba(15, 118, 110, 0.3);
+      }
+      .tab:hover:not(.active) {
+        background: var(--surf3);
+        color: var(--teal);
+      }
+
+      /* ── FIELDS ── */
+      .field {
+        margin-bottom: 1.2rem;
+      }
+      .field-label {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.62rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: color 0.35s;
+      }
+      .field-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+        transition: background 0.35s;
+      }
+
+      /* FIXED HEIGHT INPUT AREA - same for both modes */
+      .input-wrap {
+        width: 100%;
+        height: 110px;
+        position: relative;
+      }
+      .input-wrap textarea,
+      .input-wrap input[type="text"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.9rem;
+        color: var(--text);
+        background: var(--input-bg);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        outline: none;
+        resize: none;
+        line-height: 1.7;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s,
+          background 0.35s,
+          color 0.35s;
+        -webkit-appearance: none;
+      }
+      .input-wrap input[type="text"] {
+        height: 100%;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      .input-wrap textarea:focus,
+      .input-wrap input[type="text"]:focus {
+        border-color: var(--teal2);
+        background: var(--input-focus);
+        box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.18);
+      }
+      .input-wrap textarea::placeholder,
+      .input-wrap input::placeholder {
+        color: var(--teal3);
+        opacity: 0.85;
+      }
+
+      /* ── CONVERT BUTTON ── */
+      .btn-main {
+        width: 100%;
+        padding: 0.86rem 1rem;
+        border: none;
+        border-radius: 14px;
+        background: var(--grad);
+        color: #fff;
+        font-family: "Roboto", sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.2px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 18px rgba(15, 118, 110, 0.34);
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      .btn-main::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.13),
+          transparent
+        );
+        pointer-events: none;
+      }
+      .btn-main:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 7px 24px rgba(15, 118, 110, 0.45);
+      }
+      .btn-main:active {
+        transform: none;
+        box-shadow: 0 2px 10px rgba(15, 118, 110, 0.22);
+      }
+      .btn-hint {
+        display: block;
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.58rem;
+        opacity: 0.7;
+        font-weight: 400;
+        margin-top: 2px;
+      }
+
+      /* ── OUTPUT ── */
+      .out-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+      .out-box {
+        background: var(--out-bg);
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.87rem;
+        color: var(--text);
+        min-height: 50px;
+        word-break: break-all;
+        white-space: pre-wrap;
+        line-height: 1.85;
+        transition:
+          background 0.35s,
+          border-color 0.35s,
+          color 0.35s;
+      }
+      .out-empty {
+        color: var(--teal3);
+        font-style: italic;
+      }
+      .err-msg {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--err);
+        margin-top: 0.5rem;
+      }
+
+      /* ── SMALL BUTTONS ── */
+      .btn-sm {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.67rem;
+        background: var(--surf2);
+        border: 1.5px solid var(--border);
+        color: var(--muted);
+        padding: 0.28rem 0.72rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.18s;
+        white-space: nowrap;
+      }
+      .btn-sm:hover {
+        background: var(--teal2);
+        color: #fff;
+        border-color: var(--teal2);
+      }
+      .btn-sm.ok {
+        background: #10b981;
+        color: #fff;
+        border-color: #10b981;
+      }
+
+      /* ── DIVIDER ── */
+      .div-row {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        color: var(--border);
+        font-size: 0.95rem;
+        margin: 1.1rem 0;
+      }
+      .div-row::before,
+      .div-row::after {
+        content: "";
+        flex: 1;
+        height: 1.5px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          var(--border),
+          transparent
+        );
+      }
+
+      /* ── SECTION ── */
+      .section {
+        margin-top: 1.6rem;
+        animation: fadeUp 0.55s ease both;
+      }
+      .sec-head {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.6rem;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 1rem;
+        transition: color 0.35s;
+      }
+      .sec-head::before {
+        content: "";
+        width: 14px;
+        height: 2.5px;
+        background: var(--grad);
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+      .sec-head::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+        transition: background 0.35s;
+      }
+
+      /* ── GUIDE ── */
+      .guide {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1.5px solid var(--border);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: var(--sh);
+        transition:
+          background 0.35s,
+          border-color 0.35s;
+      }
+      .guide-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--teal);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: color 0.35s;
+      }
+      .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0.82rem;
+      }
+      .step {
+        display: flex;
+        gap: 0.82rem;
+        align-items: flex-start;
+      }
+      .step-n {
+        min-width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--grad);
+        color: #fff;
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.67rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .step-t {
+        font-size: 0.86rem;
+        line-height: 1.7;
+        color: var(--text);
+        transition: color 0.35s;
+      }
+      .step-t strong {
+        color: var(--teal);
+        font-weight: 700;
+      }
+      .ci {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.78rem;
+        background: var(--surf3);
+        border: 1px solid var(--border);
+        color: var(--teal);
+        padding: 0.08rem 0.4rem;
+        border-radius: 5px;
+        transition:
+          background 0.35s,
+          border-color 0.35s;
+      }
+      .eg {
+        margin-top: 0.85rem;
+        background: var(--eg-bg);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        transition:
+          background 0.35s,
+          border-color 0.35s;
+      }
+      .eg-lbl {
+        font-family: "Roboto", sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--teal);
+        margin-bottom: 0.3rem;
+        transition: color 0.35s;
+      }
+      .eg-body {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.76rem;
+        line-height: 2;
+        color: var(--text);
+        transition: color 0.35s;
+      }
+
+      /* ── DETAIL TABLE ── */
+      .tbl-wrap {
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1.5px solid var(--border);
+        margin-top: 1rem;
+        transition: border-color 0.35s;
+      }
+      .dtbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.74rem;
+        min-width: 300px;
+      }
+      .dtbl thead tr {
+        background: var(--grad);
+      }
+      .dtbl th {
+        color: #fff;
+        padding: 0.52rem 0.72rem;
+        text-align: left;
+        font-family: "Roboto", sans-serif;
+        font-weight: 600;
+        font-size: 0.7rem;
+        white-space: nowrap;
+      }
+      .dtbl td {
+        padding: 0.48rem 0.72rem;
+        border-bottom: 1px solid var(--surf3);
+        color: var(--text);
+        white-space: nowrap;
+        transition:
+          color 0.35s,
+          background 0.35s;
+      }
+      .dtbl tbody tr:last-child td {
+        border-bottom: none;
+      }
+      .dtbl tbody tr:nth-child(even) td {
+        background: rgba(20, 184, 166, 0.04);
+      }
+      .dtbl tbody tr:hover td {
+        background: var(--surf3);
+      }
+
+      /* ── ASCII TABLE ── */
+      .filter-row {
+        display: flex;
+        gap: 0.42rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.85rem;
+      }
+      .fbtn {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.6rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        background: var(--surf2);
+        border: 1.5px solid var(--border);
+        color: var(--muted);
+        padding: 0.26rem 0.62rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.18s;
+      }
+      .fbtn.on {
+        background: var(--grad);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+      }
+      .fbtn:hover:not(.on) {
+        background: var(--surf3);
+        color: var(--teal);
+      }
+      .atbl-wrap {
+        overflow-x: auto;
+        border-radius: 14px;
+        border: 1.5px solid var(--border);
+        box-shadow: var(--sh);
+        transition: border-color 0.35s;
+      }
+      .atbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.7rem;
+      }
+      .atbl thead tr {
+        background: var(--grad);
+      }
+      .atbl th {
+        color: #fff;
+        padding: 0.52rem 0.65rem;
+        font-family: "Roboto", sans-serif;
+        font-weight: 600;
+        font-size: 0.68rem;
+        letter-spacing: 0.3px;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .atbl td {
+        padding: 0.38rem 0.65rem;
+        text-align: center;
+        border-bottom: 1px solid var(--surf3);
+        color: var(--text);
+        transition:
+          color 0.35s,
+          background 0.35s;
+      }
+      .atbl tbody tr:nth-child(even) td {
+        background: rgba(20, 184, 166, 0.04);
+      }
+      .atbl tbody tr:hover td {
+        background: var(--surf3);
+      }
+      .ac {
+        font-weight: 600;
+        color: var(--teal);
+        font-size: 0.82rem;
+      }
+      .ac-s {
+        color: var(--muted);
+        font-size: 0.64rem;
+      }
+      .badge {
+        font-size: 0.6rem;
+        padding: 0.12rem 0.44rem;
+        border-radius: 999px;
+        white-space: nowrap;
+        font-family: "Roboto Mono", monospace;
+        font-weight: 500;
+      }
+      .b0 {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      [data-theme="dark"] .b0 {
+        background: #1e3a5f;
+        color: #93c5fd;
+      }
+      .b1 {
+        background: #fef9c3;
+        color: #854d0e;
+      }
+      [data-theme="dark"] .b1 {
+        background: #3d2a00;
+        color: #fcd34d;
+      }
+      .b2 {
+        background: #dcfce7;
+        color: #166534;
+      }
+      [data-theme="dark"] .b2 {
+        background: #052e16;
+        color: #4ade80;
+      }
+      .b3 {
+        background: rgba(20, 184, 166, 0.15);
+        color: #0f766e;
+      }
+      [data-theme="dark"] .b3 {
+        background: rgba(13, 148, 136, 0.2);
+        color: #5eead4;
+      }
+      .b4 {
+        background: rgba(15, 118, 110, 0.12);
+        color: #0f766e;
+      }
+      [data-theme="dark"] .b4 {
+        background: rgba(15, 118, 110, 0.25);
+        color: #2dd4bf;
+      }
+      .b5 {
+        background: #f3e8ff;
+        color: #7c3aed;
+      }
+      [data-theme="dark"] .b5 {
+        background: #2e1065;
+        color: #c4b5fd;
+      }
+      .b6 {
+        background: #ffe4e6;
+        color: #be123c;
+      }
+      [data-theme="dark"] .b6 {
+        background: #4c0519;
+        color: #fda4af;
+      }
+
+      /* ── NET BADGE ── */
+      .net {
+        position: fixed;
+        bottom: 0.9rem;
+        right: 0.9rem;
+        background: var(--surface);
+        color: var(--text);
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.6rem;
+        letter-spacing: 0.8px;
+        padding: 0.3rem 0.72rem;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        gap: 0.36rem;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        z-index: 100;
+        border: 1.5px solid var(--border);
+        transition:
+          background 0.35s,
+          color 0.35s,
+          border-color 0.35s;
+      }
+      .ndot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+        flex-shrink: 0;
+      }
+      .ndot.off {
+        background: #f43f5e;
+      }
+
+      /* ── ANIMATIONS ── */
+      @keyframes fadeDown {
+        from {
+          opacity: 0;
+          transform: translateY(-16px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+      @keyframes pop {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.035);
+        }
+      }
+      .pop {
+        animation: pop 0.26s ease;
+      }
+
+      .section:nth-child(3) {
+        animation-delay: 0.06s;
+      }
+      .section:nth-child(4) {
+        animation-delay: 0.12s;
+      }
+
+      @media (max-width: 440px) {
+        #root {
+          padding: 1rem 0.8rem 5rem;
+        }
+        .card,
+        .guide {
+          padding: 1.2rem 0.95rem;
+        }
+        h1 {
+          font-size: 1.85rem;
+        }
+        .tabs .tab {
+          font-size: 0.82rem;
+        }
+        .theme-btn {
+          top: 0.75rem;
+          right: 0.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script
+      crossorigin
+      src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+    <script type="text/babel">
+      const { useState, useEffect, useCallback, useRef, useMemo } = React;
+
+      /* ── Converters ── */
+      const CTRL_NAMES = [
+        "NUL",
+        "SOH",
+        "STX",
+        "ETX",
+        "EOT",
+        "ENQ",
+        "ACK",
+        "BEL",
+        "BS",
+        "HT",
+        "LF",
+        "VT",
+        "FF",
+        "CR",
+        "SO",
+        "SI",
+        "DLE",
+        "DC1",
+        "DC2",
+        "DC3",
+        "DC4",
+        "NAK",
+        "SYN",
+        "ETB",
+        "CAN",
+        "EM",
+        "SUB",
+        "ESC",
+        "FS",
+        "GS",
+        "RS",
+        "US",
+      ];
+      // C1 Control Characters (128–159) — ISO 6429 / ECMA-48
+      const C1_NAMES = [
+        "PAD",
+        "HOP",
+        "BPH",
+        "NBH",
+        "IND",
+        "NEL",
+        "SSA",
+        "ESA",
+        "HTS",
+        "HTJ",
+        "VTS",
+        "PLD",
+        "PLU",
+        "RI",
+        "SS2",
+        "SS3",
+        "DCS",
+        "PU1",
+        "PU2",
+        "STS",
+        "CCH",
+        "MW",
+        "SPA",
+        "EPA",
+        "SOS",
+        "SGCI",
+        "SCI",
+        "CSI",
+        "ST",
+        "OSC",
+        "PM",
+        "APC",
+      ];
+      function charDisplay(code) {
+        if (code < 32) return CTRL_NAMES[code] || "?";
+        if (code === 32) return "SP";
+        if (code === 127) return "DEL";
+        if (code >= 128 && code <= 159) return C1_NAMES[code - 128] || "?";
+        if (code === 160) return "NBSP";
+        return String.fromCharCode(code);
+      }
+      function a2d(text) {
+        if (!text) return { result: "", rows: [], error: "" };
+        const rows = [];
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i],
+            code = ch.charCodeAt(0);
+          rows.push({
+            char: charDisplay(code),
+            raw: ch,
+            dec: code,
+            hex: "0x" + code.toString(16).toUpperCase().padStart(2, "0"),
+            bin: code.toString(2).padStart(8, "0"),
+          });
+        }
+        return { result: rows.map((r) => r.dec).join(" "), rows, error: "" };
+      }
+      function d2a(text) {
+        const parts = text
+          .trim()
+          .split(/[\s,;]+/)
+          .filter(Boolean);
+        if (!parts.length) return { result: "", rows: [], error: "" };
+        const rows = [];
+        for (const p of parts) {
+          const n = parseInt(p, 10);
+          if (isNaN(n))
+            return {
+              result: "",
+              rows: [],
+              error: `"${p}" không phải số hợp lệ`,
+            };
+          if (n < 0 || n > 255)
+            return {
+              result: "",
+              rows: [],
+              error: `${n} nằm ngoài phạm vi 0–255`,
+            };
+          const ch = String.fromCharCode(n);
+          rows.push({
+            dec: n,
+            char: charDisplay(n),
+            raw: ch,
+            hex: "0x" + n.toString(16).toUpperCase().padStart(2, "0"),
+            bin: n.toString(2).padStart(8, "0"),
+          });
+        }
+        const result = rows.map((r) => (r.raw < " " ? "" : r.raw)).join("");
+        return { result, rows, error: "" };
+      }
+
+      /* ── ASCII 0–255 data ── */
+      const ASCII_DATA = (() => {
+        return Array.from({ length: 256 }, (_, i) => {
+          let catKey, catLbl, bClass;
+          if (i < 32 || i === 127) {
+            catKey = "ctrl";
+            catLbl = "Điều khiển";
+            bClass = "b0";
+          } else if (i === 32) {
+            catKey = "sp";
+            catLbl = "Khoảng trắng";
+            bClass = "b1";
+          } else if (i >= 48 && i <= 57) {
+            catKey = "num";
+            catLbl = "Chữ số";
+            bClass = "b2";
+          } else if (i >= 65 && i <= 90) {
+            catKey = "upper";
+            catLbl = "Chữ hoa";
+            bClass = "b3";
+          } else if (i >= 97 && i <= 122) {
+            catKey = "lower";
+            catLbl = "Chữ thường";
+            bClass = "b4";
+          } else if (i >= 128 && i <= 159) {
+            catKey = "ext0";
+            catLbl = "Mở rộng C1";
+            bClass = "b6";
+          } else if (i >= 160 && i <= 255 && i < 192) {
+            catKey = "ext1";
+            catLbl = "Latin Mở rộng";
+            bClass = "b5";
+          } else if (i >= 192 && i <= 255) {
+            catKey = "ext2";
+            catLbl = "Latin Đặc biệt";
+            bClass = "b3";
+          } else {
+            catKey = "punct";
+            catLbl = "Ký tự đặc biệt";
+            bClass = "b5";
+          }
+          const ch = charDisplay(i);
+          return {
+            dec: i,
+            hex: i.toString(16).toUpperCase().padStart(2, "0"),
+            bin: i.toString(2).padStart(8, "0"),
+            ch,
+            catKey,
+            catLbl,
+            bClass,
+          };
+        });
+      })();
+
+      function useCopy() {
+        const [copied, setC] = useState(false);
+        const copy = useCallback((t) => {
+          if (!t) return;
+          navigator.clipboard?.writeText(t).then(() => {
+            setC(true);
+            setTimeout(() => setC(false), 1600);
+          });
+        }, []);
+        return [copied, copy];
+      }
+
+      /* ── Dark mode toggle ── */
+      function ThemeToggle() {
+        const [dark, setDark] = useState(
+          () => document.documentElement.getAttribute("data-theme") === "dark",
+        );
+        function toggle() {
+          const nd = !dark;
+          setDark(nd);
+          document.documentElement.setAttribute(
+            "data-theme",
+            nd ? "dark" : "light",
+          );
+          localStorage.setItem("theme", nd ? "dark" : "light");
+        }
+        return (
+          <button
+            className="theme-btn"
+            onClick={toggle}
+            title={dark ? "Chuyển sang sáng" : "Chuyển sang tối"}
+            aria-label="Toggle theme"
+          >
+            <div className="theme-btn-knob">{dark ? "" : ""}</div>
+          </button>
+        );
+      }
+
+      /* ── Guide ── */
+      function Guide({ mode }) {
+        const isA = mode === "a2d";
+        return (
+          <div className="guide">
+            <div className="guide-title">
+              {isA ? (
+                <>📐 Cách chuyển ASCII → Thập phân</>
+              ) : (
+                <>📐 Cách chuyển Thập phân → ASCII</>
+              )}
+            </div>
+            <div className="steps">
+              {isA ? (
+                <>
+                  <div className="step">
+                    <div className="step-n">1</div>
+                    <div className="step-t">
+                      Mỗi ký tự trong bảng ASCII được{" "}
+                      <strong>đánh số từ 0 đến 255</strong>. Số thứ tự đó chính
+                      là giá trị thập phân — tra bảng là ra ngay, không cần phép
+                      tính.
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-n">2</div>
+                    <div className="step-t">
+                      Phần <strong>ASCII chuẩn (0–127)</strong> dùng 7 bit nhị
+                      phân. Phần <strong>mở rộng (128–255)</strong> dùng 8 bit,
+                      thường là ký tự Latin đặc biệt.
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-n">3</div>
+                    <div className="step-t">
+                      Với chuỗi nhiều ký tự, chuyển{" "}
+                      <strong>từng ký tự một</strong> rồi viết kết quả cách nhau
+                      bằng dấu cách.
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="step">
+                    <div className="step-n">1</div>
+                    <div className="step-t">
+                      Lấy số thập phân (0–255), tra bảng để tìm ký tự tương ứng.{" "}
+                      <strong>Mỗi số duy nhất một ký tự.</strong>
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-n">2</div>
+                    <div className="step-t">
+                      <strong>Mẹo nhớ nhanh:</strong> Chữ hoa A–Z = 65–90 · chữ
+                      thường a–z = 97–122 · chữ số 0–9 = 48–57 · Space = 32.
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-n">3</div>
+                    <div className="step-t">
+                      <strong>Quy tắc vàng:</strong>{" "}
+                      <span className="ci">thường = hoa + 32</span> — 'A'=65 nên
+                      'a'=97 (65+32). Áp dụng toàn bộ chữ cái.
+                    </div>
+                  </div>
+                  <div className="step">
+                    <div className="step-n">4</div>
+                    <div className="step-t">
+                      Nhiều số: tra lần lượt rồi{" "}
+                      <strong>ghép ký tự theo thứ tự</strong>. Ngăn cách bằng
+                      dấu cách, phẩy, hoặc chấm phẩy đều được.
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            {isA ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: ".6rem",
+                  marginTop: ".9rem",
+                }}
+              >
+                <div className="eg">
+                  <div className="eg-lbl">Ví dụ: ký tự "H"</div>
+                  <div className="eg-body">
+                    <div>
+                      H ở vị trí thứ <strong>72</strong> trong bảng ASCII
+                    </div>
+                    <div>
+                      Thập phân: <span className="ci">72</span> · Nhị phân:{" "}
+                      <span className="ci">0100 1000</span> · Hex:{" "}
+                      <span className="ci">0x48</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="eg">
+                  <div className="eg-lbl">Ví dụ: chuỗi "Hi!"</div>
+                  <div className="eg-body">
+                    <div>"H"→72 &nbsp;"i"→105 &nbsp;"!"→33</div>
+                    <div>
+                      Kết quả: <span className="ci">72 105 33</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: ".6rem",
+                  marginTop: ".9rem",
+                }}
+              >
+                <div className="eg">
+                  <div className="eg-lbl">Ví dụ: "72 101 108 108 111"</div>
+                  <div className="eg-body">
+                    <div>
+                      72→<span className="ci">H</span> 101→
+                      <span className="ci">e</span> 108→
+                      <span className="ci">l</span> 108→
+                      <span className="ci">l</span> 111→
+                      <span className="ci">o</span>
+                    </div>
+                    <div>
+                      Kết quả: <span className="ci">Hello</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="eg">
+                  <div className="eg-lbl">Bảng nhớ nhanh</div>
+                  <div className="eg-body">
+                    <div>
+                      'A'=<span className="ci">65</span> · 'Z'=
+                      <span className="ci">90</span> · 'a'=
+                      <span className="ci">97</span> · 'z'=
+                      <span className="ci">122</span>
+                    </div>
+                    <div>
+                      '0'=<span className="ci">48</span> · Space=
+                      <span className="ci">32</span> · Enter=
+                      <span className="ci">13</span> · Tab=
+                      <span className="ci">9</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      /* ── ASCII Table ── */
+      const ALL_CATS = [
+        "all",
+        "ctrl",
+        "sp",
+        "num",
+        "upper",
+        "lower",
+        "punct",
+        "ext0",
+        "ext1",
+        "ext2",
+      ];
+      const CAT_LBL = {
+        all: "Tất cả",
+        ctrl: "Điều khiển",
+        sp: "Khoảng trắng",
+        num: "Số",
+        upper: "Hoa",
+        lower: "Thường",
+        punct: "Đặc biệt",
+        ext0: "C1 (128–159)",
+        ext1: "Latin (160–191)",
+        ext2: "Latin (192–255)",
+      };
+
+      function AsciiTable() {
+        const [filter, setFilter] = useState("all");
+        const rows = useMemo(
+          () =>
+            filter === "all"
+              ? ASCII_DATA
+              : ASCII_DATA.filter((r) => r.catKey === filter),
+          [filter],
+        );
+        return (
+          <>
+            <div className="filter-row">
+              {ALL_CATS.map((c) => (
+                <button
+                  key={c}
+                  className={`fbtn${filter === c ? " on" : ""}`}
+                  onClick={() => setFilter(c)}
+                >
+                  {CAT_LBL[c]}
+                </button>
+              ))}
+            </div>
+            <div className="atbl-wrap">
+              <table className="atbl">
+                <thead>
+                  <tr>
+                    <th>Dec</th>
+                    <th>Hex</th>
+                    <th>Bin</th>
+                    <th>Ký tự</th>
+                    <th>Loại</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.dec}>
+                      <td>
+                        <strong>{r.dec}</strong>
+                      </td>
+                      <td>{r.hex}</td>
+                      <td style={{ letterSpacing: "1px" }}>{r.bin}</td>
+                      <td>
+                        {r.catKey === "ctrl" ||
+                        r.catKey === "sp" ||
+                        r.catKey === "ext0" ||
+                        r.dec === 160 ? (
+                          <span className="ac-s">{r.ch}</span>
+                        ) : (
+                          <span className="ac">{r.ch}</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className={`badge ${r.bClass}`}>{r.catLbl}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        );
+      }
+
+      /* ── App ── */
+      function App() {
+        const [mode, setMode] = useState("a2d");
+        const [input, setInput] = useState("");
+        const [out, setOut] = useState(null);
+        const [showTbl, setShowTbl] = useState(false);
+        const [online, setOnline] = useState(navigator.onLine);
+        const [copied, copy] = useCopy();
+        const btnRef = useRef();
+        const isA = mode === "a2d";
+
+        useEffect(() => {
+          // restore theme
+          const saved = localStorage.getItem("theme");
+          if (saved) document.documentElement.setAttribute("data-theme", saved);
+        }, []);
+
+        useEffect(() => {
+          const on = () => setOnline(true),
+            off = () => setOnline(false);
+          window.addEventListener("online", on);
+          window.addEventListener("offline", off);
+          return () => {
+            window.removeEventListener("online", on);
+            window.removeEventListener("offline", off);
+          };
+        }, []);
+
+        function convert() {
+          if (!input.trim()) return;
+          setOut(isA ? a2d(input) : d2a(input));
+          setShowTbl(false);
+          btnRef.current?.classList.remove("pop");
+          void btnRef.current?.offsetWidth;
+          btnRef.current?.classList.add("pop");
+        }
+        function changeMode(m) {
+          setMode(m);
+          setInput("");
+          setOut(null);
+          setShowTbl(false);
+        }
+
+        return (
+          <>
+            <ThemeToggle />
+
+            <div className="hdr">
+              <div className="hdr-pill">
+                <span className="dot" />
+                Offline Ready
+              </div>
+              <h1>
+                ASCII <em>↔</em> Decimal
+              </h1>
+              <div className="hdr-sub">
+                Bộ công cụ chuyển đổi mã ký tự · 0–255
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="tabs">
+                <button
+                  className={`tab${isA ? " active" : ""}`}
+                  onClick={() => changeMode("a2d")}
+                >
+                  ASCII → Decimal
+                </button>
+                <button
+                  className={`tab${!isA ? " active" : ""}`}
+                  onClick={() => changeMode("d2a")}
+                >
+                  Decimal → ASCII
+                </button>
+              </div>
+
+              <div className="field">
+                <div className="field-label">
+                  {isA ? "Nhập văn bản" : "Nhập giá trị thập phân"}
+                </div>
+                <div className="input-wrap">
+                  {isA ? (
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.ctrlKey && e.key === "Enter") convert();
+                      }}
+                      placeholder="Ví dụ: Hello, World!"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && convert()}
+                      placeholder="Ví dụ: 72 101 108 108 111"
+                    />
+                  )}
+                </div>
+                {out?.error && <div className="err-msg">⚠ {out.error}</div>}
+              </div>
+
+              <button className="btn-main" ref={btnRef} onClick={convert}>
+                ⇄&nbsp; Chuyển đổi {isA ? "→ Decimal" : "→ ASCII"}
+                <span className="btn-hint">Ctrl+Enter để chuyển nhanh</span>
+              </button>
+
+              {out && !out.error && (
+                <>
+                  <div className="div-row">↓</div>
+                  <div className="field">
+                    <div className="out-header">
+                      <div className="field-label" style={{ marginBottom: 0 }}>
+                        {isA ? "Kết quả thập phân" : "Kết quả ASCII"}
+                      </div>
+                      <button
+                        className={`btn-sm${copied ? " ok" : ""}`}
+                        onClick={() => copy(out.result)}
+                      >
+                        {copied ? "✓ Đã chép" : "⎘ Copy"}
+                      </button>
+                    </div>
+                    <div className="out-box">
+                      {out.result || (
+                        <span className="out-empty">
+                          Kết quả rỗng (ký tự điều khiển)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center", marginTop: ".75rem" }}>
+                    <button
+                      className="btn-sm"
+                      onClick={() => setShowTbl((v) => !v)}
+                    >
+                      {showTbl ? "▲ Ẩn bảng chi tiết" : "▼ Bảng chi tiết"}
+                    </button>
+                  </div>
+                  {showTbl && out.rows.length > 0 && (
+                    <div className="tbl-wrap">
+                      <table className="dtbl">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Ký tự</th>
+                            <th>Dec</th>
+                            <th>Hex</th>
+                            <th>Bin</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {out.rows.map((r, i) => (
+                            <tr key={i}>
+                              <td style={{ opacity: 0.4 }}>{i + 1}</td>
+                              <td
+                                style={{
+                                  fontWeight: 600,
+                                  color: "var(--teal)",
+                                  fontSize: ".86rem",
+                                }}
+                              >
+                                {r.char}
+                              </td>
+                              <td>{r.dec}</td>
+                              <td>{r.hex}</td>
+                              <td
+                                style={{ letterSpacing: "1px", opacity: 0.65 }}
+                              >
+                                {r.bin}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="section">
+              <div className="sec-head">Hướng dẫn tính thủ công</div>
+              <Guide mode={mode} />
+            </div>
+
+            <div className="section">
+              <div className="sec-head">
+                Bảng mã ASCII / Latin Extended 0–255
+              </div>
+              <AsciiTable />
+            </div>
+
+            <div className="net">
+              <span className={`ndot${online ? "" : " off"}`} />
+              {online ? "Online" : "Offline"}
+            </div>
+          </>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./sw.js")
+            .then((r) => console.log("[SW]", r.scope))
+            .catch((e) => console.warn("[SW]", e));
+        });
+      }
+    </script>
+  </body>
+</html>
