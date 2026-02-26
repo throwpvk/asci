@@ -1,4 +1,4 @@
-const CACHE_NAME = "ascii-converter-v0";
+const CACHE_NAME = "ascii-converter-v1";
 const ASSETS = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", (e) => {
